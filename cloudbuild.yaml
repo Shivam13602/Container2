@@ -1,0 +1,23 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/${PROJECT_ID}/k8s-repo/container2-service:${SHORT_SHA}', '.']
+  
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/k8s-repo/container2-service:${SHORT_SHA}']
+  
+  # Deploy container image to GKE
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/container2-deployment'
+      - 'container2=us-central1-docker.pkg.dev/${PROJECT_ID}/k8s-repo/container2-service:${SHORT_SHA}'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=shivam-gke-cluster'
+
+# Store images in Artifact Registry
+images:
+  - 'us-central1-docker.pkg.dev/${PROJECT_ID}/k8s-repo/container2-service:${SHORT_SHA}' 
